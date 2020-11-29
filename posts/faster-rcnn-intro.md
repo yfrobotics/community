@@ -1,10 +1,10 @@
 
 # Faster R-CNN
-![](https://www.yfworld.com/wp-content/uploads/2020/10/Faster-RCNN.jupyter_1_1.png)
+![](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_1_1.png)
 
 Faster R-CNN将Fast R-CNN中的Selective Search换成了Region Proposal Network，这样位置网络就和分类网络结合起来，**于是CNN提取的特征feature maps被两者共用**，不仅极大加快了速度，还提升了精度（两者会互相促进）。
 
-![](https://www.yfworld.com/wp-content/uploads/2020/10/Faster-RCNN.jupyter_2_1.png)
+![](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_2_1.png)
 
 
 Faster R-CNN的训练过程：
@@ -63,12 +63,12 @@ del image, model
 ## 2. Feature Extraction
 Faster R-CNN网络主要有三个部分，如下图所示，分别为`feature extraction`、`region proposal`和`predication`：
 
-![](https://www.yfworld.com/wp-content/uploads/2020/10/Faster-RCNN.jupyter_3.png)
+![](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_3.png)
 
 ### 2.1 FPN
 注意上图论文中的`feature extraction`使用的backbone是VGG，PyTorch官方版本使用了带FPN的ResNet-50。如下图所示，ResNet-50四个阶段的features都被使用了。低层的特征语义信息比较少，但是目标位置准确；高层的特征语义信息比较丰富，但是目标位置比较粗略。将低层的特征和高层的特征融合起来，有利于网络性能。另外目标框会随着features减小而减小，这样在被缩小了32倍的最后一层features上，小目标就会变得非常小，难以被检测出来，**于是融合后不同尺度的特征负责检测不同大小的物体**。
 
-![](https://www.yfworld.com/wp-content/uploads/2020/10/Faster-RCNN.jupyter_4.png)
+![](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_4.png)
 
 如图所示，高层的特征会被放大2倍后，加上经过1x1卷积的底层特征，下面是结合了FPN的ResNet-50的输出：
 
@@ -88,7 +88,7 @@ del x, output, backbone
 
 
 ## 3 Region Proposal Network
-![](https://www.yfworld.com/wp-content/uploads/2020/10/Faster-RCNN.jupyter_5.png)
+![](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_5.png)
 
 
 如上图所示，假设backbone的`stride=4`或者说原图Image被down sample了4倍，由于多次卷积操作，`feature_map`中一个cell的感受野要远大于左边的一个grid，甚至能达到整幅图的区域。上文中带FPN的ResNet-50提供了4种尺寸的feature maps，我们可以用这些feature maps中的cells来预测原图中的物体。
@@ -97,7 +97,7 @@ del x, output, backbone
 ### 3.1 Anchors
 因为物体的形状和大小各种各样，所以一个cell需要能够预测形状和大小不同的物体（物体中心靠近cell中心）。如果直接让网络学习各种不确定的目标框会很难，所以我们对这些cells预先设置了一些anchors，让cells基于这些anchors预测大小和位置的偏移量。
 
-设anchors的大小为$s$，宽高比为$r&gt;0$，那么anchors的宽和高分别为$s/\sqrt{r}$和$s\sqrt{r}$。如果$r$有3种，$s$有2种，那么组合起来能得到6种框：
+设anchors的大小为$s$，宽高比为$r>0$，那么anchors的宽和高分别为$s/\sqrt{r}$和$s\sqrt{r}$。如果$r$有3种，$s$有2种，那么组合起来能得到6种框：
 
 ```python
 ratio = [0.5, 1, 2]
@@ -150,7 +150,7 @@ plot_anchors(cx, cy, anchors)
 plt.show()
 ```
 
-![](https://www.yfworld.com/wp-content/uploads/2020/10/Faster-RCNN.jupyter_output_1.png)
+![](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_output_1.png)
 
 我们可以脑补一下feature maps的每个cell都有预先设定的anchors，于是Region Proposal Network（RPN）就要对这些anchors进行处理。
 
@@ -162,7 +162,7 @@ plt.show()
 如下图所示，假设每个cell有$k$个anchors，于是RPN要判断这$k$个anchors否为物体（分类，classification layer），还要判断准确的位置和形状（回归，regression layer），在这之前先做一次3x3卷积得到channel数为256-d的featuer maps。
 
 
-![](https://www.yfworld.com/wp-content/uploads/2020/10/Faster-RCNN.jupyter_6.png)
+![](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_6.png)
 
 
 RPN网络代码如下：
@@ -204,7 +204,7 @@ class RPNHead(nn.Module):
 ```
 由于FPN的backbone会输出多组feature maps（分别为`stride=4/8/16/32`），所以`RPNHead`的`forward()`默认输入`x`为iteratble类型的，例如`[fm_1/4, fm_1/8, fm_1/16, fm_1/32]`。整个过程如下图所示（设$k=3$）：
 
-![](https://www.yfworld.com/wp-content/uploads/2020/10/Faster-RCNN.jupyter_7.png)
+![](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_7.png)
 
 需要注意的是，这里黄色`scores`的`channels=3`，而非$2k=10$，这是因为是判断框是否为物体的分类函数用了逻辑回归，直接输出的是logit而非概率，loss函数用了`binary_cross_entropy_with_logits`，应该是为了优化cross entropy和sigmoid的联合求导（类似softmax和corss entropy联合求导）。假设$w,h=32,c=10$，那么对应的代码为：
 
@@ -219,17 +219,25 @@ del x, scores, coordinates
 ### 3.3 Bounding Box Regression
 现在RPN预测的物体bounding box。如下图所示，$x_a, y_a, w_a, h_a$是某一个anchor，$x, y, w, h$是RPN基于这个anchor预测的bbox，$x^*, y^*, w^*, h^*$是对应目标的ground truth。
 
-![](https://www.yfworld.com/wp-content/uploads/2020/10/Faster-RCNN.jupyter_8.png)
+![](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_8.png)
 
-那么将中心坐标偏移量和宽高比分别归一化后可以得到$t_x, t_y, t_w, t_h$，也就是RPN网络需要学习输出的bbox信息，而$t_*, t_*, t_*, t_*$是ground truth，两者结合可以计算出bounding box regreesion分支的loss。
+那么将中心坐标偏移量和宽高比分别归一化后可以得到$t_x, t_y, t_w, t_h$，也就是RPN网络需要学习输出的bbox信息，而$t_x^*,t_y^*,t_w^*,t_h^*$是ground truth，两者结合可以计算出bounding box regreesion分支的loss。
 
-$$t_{\mathrm{x}}=\left(x-x_{\mathrm{a}}\right) / w_{\mathrm{a}}, \quad t_{\mathrm{y}}=\left(y-y_{\mathrm{a}}\right) / h_{\mathrm{a}}$$
+$$
+t_{\mathrm{x}}=\left(x-x_{\mathrm{a}}\right) / w_{\mathrm{a}}, \quad t_{\mathrm{y}}=\left(y-y_{\mathrm{a}}\right) / h_{\mathrm{a}}
+$$
 
-$$t_{\mathrm{w}}=\log \left(w / w_{\mathrm{a}}\right), \quad t_{\mathrm{h}}=\log \left(h / h_{\mathrm{a}}\right)$$
+$$
+t_{\mathrm{w}}=\log \left(w / w_{\mathrm{a}}\right), \quad t_{\mathrm{h}}=\log \left(h / h_{\mathrm{a}}\right)
+$$
 
-$$t_{\mathrm{x}}^{\*}=\left(x^{*}-x_{\mathrm{a}}\right) / w_{\mathrm{a}}, \quad t_{\mathrm{y}}^{\*}=\left(y^{\*}-y_{\mathrm{a}}\right) / h_{\mathrm{a}}$$
+$$
+t_{\mathrm{x}}^{*}=\left(x^{*}-x_{\mathrm{a}}\right) / w_{\mathrm{a}}, \quad t_{\mathrm{y}}^{*}=\left(y^{*}-y_{\mathrm{a}}\right) / h_{\mathrm{a}}
+$$
 
-$$t_{\mathrm{w}}^{\*}=\log \left(w^{\*} / w_{\mathrm{a}}\right), \quad t_{\mathrm{h}}^{\*}=\log \left(h^{\*} / h_{\mathrm{a}}\right)$$
+$$
+t_{\mathrm{w}}^{*}=\log \left(w^{*} / w_{\mathrm{a}}\right), \quad t_{\mathrm{h}}^{*}=\log \left(h^{*} / h_{\mathrm{a}}\right)
+$$
 
 分别除以$w_a, h_a$进行归一化利于网络学习，但是为什么宽高比值都加了一个log函数呢？**因为宽高比必须大于等于0，所以变成了一个带约束的优化问题，而$w/w_a=e^{t_w}$恒大于0，这样网络输出的$t_w, t_h$就没有限制了！！！**
 
@@ -241,12 +249,14 @@ anchors根据有无物体分为正样本和负样本：如果一个anchor和某�
 
 RPN网络的Loss函数如下，$N_{reg}$只包括$p^*=1$的正样本：
 
-$$L(\{p_i\},\{t_{i}\})=\frac{1}{N_{cls}} \sum_{i} L_{cls}\left(p_i, p_{i}^{\*}\right)+\lambda \frac{1}{N_{reg}} \sum_{i} p_{i}^{\*} L_{reg}\left(t_{i}, t_{i}^{\*}\right)$$
+$$
+L(\{p_i\},\{t_{i}\})=\frac{1}{N_{cls}} \sum_{i} L_{cls}\left(p_i, p_{i}^{*}\right)+\lambda \frac{1}{N_{reg}} \sum_{i} p_{i}^{*} L_{reg}\left(t_{i}, t_{i}^{*}\right)
+$$
 
 ### 3.5 NMS
 因为RPN输出的目标框会有很多重叠的（如下图所示），所以我们需要使用NMS进行过滤。
 
-![](https://www.yfworld.com/wp-content/uploads/2020/10/Faster-RCNN.jupyter_output_2.png)
+![](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_output_2.png)
 
 ```python
 from matplotlib.patches import Rectangle
@@ -283,15 +293,17 @@ plt_boxes(dets, ax)
 plt.show()
 ```
 
-![](https://www.yfworld.com/wp-content/uploads/2020/10/Faster-RCNN.jupyter_output_3.png)
+![](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_output_3.png)
 
-首先按照分类得分高低将框排序，然后遍历（已删除的不再遍历），删除和当前框$\text{IoU}&gt;\text{threshold}$（论文中为0.7）的框。
+首先按照分类得分高低将框排序，然后遍历（已删除的不再遍历），删除和当前框$\text{IoU} > \text{threshold}$（论文中为0.7）的框。
 
 IoU的公式和示意图如下：
 
-$$J(\mathcal{A}, \mathcal{B})=\frac{|\mathcal{A} \cap \mathcal{B}|}{|\mathcal{A} \cup \mathcal{B}|}$$
+$$
+J(\mathcal{A}, \mathcal{B})=\frac{|\mathcal{A} \cap \mathcal{B}|}{|\mathcal{A} \cup \mathcal{B}|}
+$$
 
-![](https://www.yfworld.com/wp-content/uploads/2020/10/Faster-RCNN.jupyter_9.png)
+![](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_9.png)
 
 ```python
 def nms(dets, thres):
@@ -308,7 +320,7 @@ def nms(dets, thres):
     order = scores.argsort()[::-1]
 
     kept_idx = []
-    while order.size &gt; 0:
+    while order.size > 0:
         i = order[0]
         kept_idx.append(i)
         xx1 = np.maximum(x1[i], x1[order[1:]])
@@ -322,7 +334,170 @@ def nms(dets, thres):
         inter = w * h
         IoU = inter / (area[i] + area[order[1:]] - inter)
 
-        inds = np.where(IoU 0.7的为正样本， threshold
+        inds = np.where(IoU <= thres)[0]
+        order = order[inds+1] # IoU starts from 1, so add 1 here to align the index
+
+    return kept_idx
+
+"""
+[757, 218, 937, 394, 0.96]
+[768, 198, 962, 364, 0.85]
+[740, 240, 906, 414, 0.83]
+"""
+dets_nms = dets[nms(dets, 0.5)]
+ax = plt.gca()
+plt_boxes(dets_nms, ax)
+plt.show()
+
+del dets, dets_nms
+```
+
+### 3.6 RPN总结
+
+RPN的训练过程如下：
+
+1. 生成anchors，忽略越界的anchors
+2. 为anchors分配gt框，IoU>0.7的为正样本，<0.3的为负样本，其他anchors忽略
+3. 按1:1比例随机选取正负样本，生成容量为256的batch进行训练
+4. 对所有样本进行region proposal，保留正样本（有物体）的regions
+5. 对proposal regions进行NMS，每张图选取2000个proposal regions，送入Fast R-CNN网络
+
+RPN的测试过程稍有不同：
+
+1. 生成anchors，截断越界的anchors
+2. 对所有anchors进行region proposal
+3. 对proposal regions进行NMS，每张图选取300个proposal regions，送入Fast R-CNN网络
+
+## 4 Fast R-CNN
+
+有了RPN输出的proposal regions，Fast R-CNN网络对这些regions进一步精炼，并且判断region的是哪一类物体。由于backbone提取的特征可以被RPN和Fast R-CNN共享，所以要将对应proposal regions的features提取出来（见“Feature Extraction”小节）。为了保证输入Fast R-CNN的feature maps大小一致（e.g.，7×7），需要用到ROI Pooling。
+
+### 4.1 ROI Pooling
+
+如下图所示，候选框r0r0和r1r1形状不同，但是都要pooling到2×2，而且两者还有个overlap的$x_{23}$，所以$x_{23}$上的梯度要累加。
+
+![img](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_10.png)
+
+如下图所示，假设一个8×8的feature map，其`stride=32`，其中一个proposal region在原图（256×256）中大小为230×160并且起点为原点（左下角），现在需要对这个框对应的RoI feature进行pooling得到2×2的输出：
+
+1. 计算这个框在feature map上对应的RoI位置，其右上角位置为(230/32=7.18, 160/32=5)，第一次量化操作得到(7, 5)；
+2. 将对应的featurer RoI划分为2×2=4个区域，每一个大小为(7/2=3.5, 5/2=2.5)，第二次量化得到(3, 2)、(4, 2)、(3, 3)、(3, 2)共4个区域的大小；
+3. 在4个区域内做pooling操作，一般为max pooling；
+
+因为RoI Pooling的过程存在两次量化取整操作，会导致误差累积，所以后来出现了避免两次量化误差的RoI Align和积分形式的Precision RoI等Pooling方法。
+
+因为RoI Pooling的过程存在两次量化取整操作，会导致误差累积，所以后来出现了避免两次量化误差的RoI Align和积分形式的Precision RoI等Pooling方法。
+
+![img](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_11.png)
+
+反向传播公式为：
+
+$$
+\frac{\partial L}{\partial x_{i}}=\sum_{r} \sum_{j}\left[i=i^{*}(r, j)\right] \frac{\partial L}{\partial y_{r j}}
+$$
+
+这里，$x_i$代表池化前特征图上的像素点；$y_{rj}$代表池化后的第r个候选区域的第j个点；$i^* (r,j)$代表点$y_{rj}$的来源，即最大池化时选出的最大像素值所在点的坐标。由上式可以看出，只有当池化后某一个点的像素值在池化过程中采用了当前点$x_i$的像素值（即满足$i=i^* (r,j)$)，才在$x_i$代表处回传梯度。
+
+### 4.2 Prediction
+
+Fast R-CNN需要预测proposal regions的类别，并且进一步修正这些regions的位置和大小。先将RoI Pooling/Align得到的7×7特征经过两个全连接层，然后预测`cls_score`和`bbox_pred`，如下图所示（图中将features的channels简化为1，实际应该等于backbone的features的channels）：
+
+![img](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_12.png)
+
+```python
+class TwoMLPHead(nn.Module):
+    def __init__(self, in_channels, representation_size):
+        super(TwoMLPHead, self).__init__()
+        self.fc6 = nn.Linear(in_channels, representation_size)
+        self.fc7 = nn.Linear(representation_size, representation_size)
+
+    def forward(self, x):
+        x = x.flatten(start_dim=1)
+        x = F.relu(self.fc6(x))
+        x = F.relu(self.fc7(x))
+        return x
+
+
+class FastRCNNPredictor(nn.Module):
+    def __init__(self, in_channels, num_classes):
+        super(FastRCNNPredictor, self).__init__()
+        self.cls_score = nn.Linear(in_channels, num_classes)
+        self.bbox_pred = nn.Linear(in_channels, num_classes * 4)
+
+    def forward(self, x):
+        if x.dim() == 4:
+            assert list(x.shape[2:]) == [1, 1]
+        x = x.flatten(start_dim=1)
+        scores = self.cls_score(x)
+        bbox_deltas = self.bbox_pred(x)
+        return scores, bbox_deltas
+num_classes = 10+1 # 1 is background
+channels = 10
+
+x = torch.rand(1, channels, 7, 7)
+x_fc7 = TwoMLPHead(channels*7**2, 1024)(x)
+cls, bbox = FastRCNNPredictor(1024, num_classes)(x_fc7)
+print(cls.shape, bbox.shape)
+
+del x, x_fc7, cls, bbox
+```
+
+最后的输出为每一类（包括背景）都预测了bbox，所以需要根据cls最高的那一类去取对应的bbox（其他bbox也不参与loss计算）。我觉得输出一个box就好了，网络更简单，也利于网络学习，但是我未验证过。
+
+## 5. 4-Step Alternating Training
+
+论文中说RPN网络和Fast R-CNN网络不能联合训练，因为ROI Pooling对位置和特征不可同时求梯度（ROI Pooling的输入是特征和**基于同样特征预测的位置**），但是RoI Warp Pooling就可以，这点我没想明白。
+
+作者推荐了一个4步训练法，流程如下：
+
+![img](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_13.png)
+
+最后附上一张我觉得最能体现整个训练和测试过程的图：
+
+![img](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_14.png)
+
+
+## 6. Inference (Test)
+
+用官方预训练好的模型：
+
+```python
+model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
+model.eval()
+```
+
+```python
+# Class labels from official PyTorch documentation for the pretrained model
+# Note that there are some N/A's 
+# for complete list check https://tech.amikelive.com/node-718/what-object-categories-labels-are-in-coco-dataset/
+# we will use the same list for this notebook
+COCO_INSTANCE_CATEGORY_NAMES = [
+    '__background__', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
+    'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'N/A', 'stop sign',
+    'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow',
+    'elephant', 'bear', 'zebra', 'giraffe', 'N/A', 'backpack', 'umbrella', 'N/A', 'N/A',
+    'handbag', 'tie', 'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball',
+    'kite', 'baseball bat', 'baseball glove', 'skateboard', 'surfboard', 'tennis racket',
+    'bottle', 'N/A', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl',
+    'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza',
+    'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed', 'N/A', 'dining table',
+    'N/A', 'N/A', 'toilet', 'N/A', 'tv', 'laptop', 'mouse', 'remote', 'keyboard', 'cell phone',
+    'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'N/A', 'book',
+    'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush'
+]
+
+
+def get_prediction(img_path, threshold):
+  """
+  get_prediction
+    parameters:
+      - img_path - path of the input image
+      - threshold - threshold value for prediction score
+    method:
+      - Image is obtained from the image path
+      - the image is converted to image tensor using PyTorch's Transforms
+      - image is passed through the model to get the predictions
+      - class, box coordinates are obtained, but only prediction score > threshold
         are chosen.
     
   """
@@ -333,7 +508,7 @@ def nms(dets, thres):
   pred_class = [COCO_INSTANCE_CATEGORY_NAMES[i] for i in list(pred[0]['labels'].numpy())]
   pred_boxes = [[(i[0], i[1]), (i[2], i[3])] for i in list(pred[0]['boxes'].detach().numpy())]
   pred_score = list(pred[0]['scores'].detach().numpy())
-  pred_t = [pred_score.index(x) for x in pred_score if x&gt;threshold][-1]
+  pred_t = [pred_score.index(x) for x in pred_score if x>threshold][-1]
   pred_boxes = pred_boxes[:pred_t+1]
   pred_class = pred_class[:pred_t+1]
   return pred_boxes, pred_class
@@ -372,13 +547,13 @@ def object_detection_api(img_path, threshold=0.5, rect_th=3, text_size=3, text_t
 object_detection_api("../_files/people.jpg", threshold=0.8)
 ```
 
-![](https://www.yfworld.com/wp-content/uploads/2020/10/Faster-RCNN.jupyter_47_1.png)
+![](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_47_1.png)
 
 ```python
 object_detection_api('../_files/traffic-143391_960_720.jpg', threshold=0.8, text_size=1)
 ```
 
-![](https://www.yfworld.com/wp-content/uploads/2020/10/Faster-RCNN.jupyter_48_0.png)
+![](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_48_0.png)
 
 ## 7. 推荐阅读
 - [Faster R-CNN Object Detection with PyTorch](https://www.learnopencv.com/faster-r-cnn-object-detection-with-pytorch/)
