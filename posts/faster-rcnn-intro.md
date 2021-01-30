@@ -1,5 +1,5 @@
 
-# Faster R-CNN
+# Faster R-CNN原理与使用 (Pytorch)
 ![](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_1_1.png)
 
 Faster R-CNN将Fast R-CNN中的Selective Search换成了Region Proposal Network，这样位置网络就和分类网络结合起来，**于是CNN提取的特征feature maps被两者共用**，不仅极大加快了速度，还提升了精度（两者会互相促进）。
