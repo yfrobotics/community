@@ -10,15 +10,16 @@
 - 2020/12/23: [赛博朋克中的科技到底离我们有多远？](posts/how-far-is-cyberpunk.md) - [automaticdai](https://github.com/automaticdai)
 - 2020/11/29: [Nvidia Jetson Nano介绍与使用指南](posts/nvidia-jetson-nano-intro-and-guidance.md) - [automaticdai](https://github.com/automaticdai)
 - 2020/10/19: [Faster R-CNN原理与使用](posts/faster-rcnn-intro.md) - [LinkHS](https://github.com/linkhs)
+- 2020/10/18: [写在云飞机器人实验室改版之际](posts/community-campaign.md) - [automaticdai](https://github.com/automaticdai)
 
 ## Commit an issue
 
-你可以在Issues中：
+如果你发现文章中的错误，你可以提交一个issue。
+
+同时你也可以在Issues中：
 
 - 对我们的网站提出建议
-- 对文章内容中的错误提出修改建议
-- 申请我们撰写新的文章内容
-- 申请自己的投稿
+- 申请/认领文章投稿
 
 ---
 
