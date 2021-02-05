@@ -18,8 +18,9 @@
 
 同时你也可以在Issues中：
 
-- 对我们的网站提出建议
-- 申请/认领文章投稿
+- [对我们的网站及内容提出反馈](https://github.com/yfrobotics/community/issues/3)
+- [申请/认领文章投稿](https://github.com/yfrobotics/community/issues/2)
+- [给我们留言](https://github.com/yfrobotics/community/issues/1)
 
 ## License
 
