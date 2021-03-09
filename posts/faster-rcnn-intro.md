@@ -1,5 +1,5 @@
-
 # Faster R-CNN原理与使用 (Pytorch)
+
 ![](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_1_1.png)
 
 Faster R-CNN将Fast R-CNN中的Selective Search换成了Region Proposal Network，这样位置网络就和分类网络结合起来，**于是CNN提取的特征feature maps被两者共用**，不仅极大加快了速度，还提升了精度（两者会互相促进）。
@@ -217,11 +217,11 @@ del x, scores, coordinates
 ```
 
 ### 3.3 Bounding Box Regression
-现在RPN预测的物体bounding box。如下图所示，$x_a, y_a, w_a, h_a$是某一个anchor，$x, y, w, h$是RPN基于这个anchor预测的bbox，$x^*, y^*, w^*, h^*$是对应目标的ground truth。
+现在RPN预测的物体bounding box。如下图所示，$x_a, y_a, w_a, h_a$是某一个anchor，$x, y, w, h$是RPN基于这个anchor预测的bbox，$x^\ast, y^\ast, w^\ast, h^\ast$是对应目标的ground truth。
 
 ![](https://cloud.yfworld.com/img/2020/11/Faster-RCNN.jupyter_8.png)
 
-那么将中心坐标偏移量和宽高比分别归一化后可以得到$t_x, t_y, t_w, t_h$，也就是RPN网络需要学习输出的bbox信息，而$t_x^*,t_y^*,t_w^*,t_h^*$是ground truth，两者结合可以计算出bounding box regreesion分支的loss。
+那么将中心坐标偏移量和宽高比分别归一化后可以得到$t_x, t_y, t_w, t_h$，也就是RPN网络需要学习输出的bbox信息，而$t_x^{\ast},t_y^{\ast},t_w^{\ast},t_h^{\ast}$是ground truth，两者结合可以计算出bounding box regreesion分支的loss。
 
 $$
 t_{\mathrm{x}}=\left(x-x_{\mathrm{a}}\right) / w_{\mathrm{a}}, \quad t_{\mathrm{y}}=\left(y-y_{\mathrm{a}}\right) / h_{\mathrm{a}}
@@ -232,11 +232,11 @@ t_{\mathrm{w}}=\log \left(w / w_{\mathrm{a}}\right), \quad t_{\mathrm{h}}=\log \
 $$
 
 $$
-t_{\mathrm{x}}^{*}=\left(x^{*}-x_{\mathrm{a}}\right) / w_{\mathrm{a}}, \quad t_{\mathrm{y}}^{*}=\left(y^{*}-y_{\mathrm{a}}\right) / h_{\mathrm{a}}
+t_{\mathrm{x}}^{\ast}=\left(x^{\ast}-x_{\mathrm{a}}\right) / w_{\mathrm{a}}, \quad t_{\mathrm{y}}^{\ast}=\left(y^{\ast}-y_{\mathrm{a}}\right) / h_{\mathrm{a}}
 $$
 
 $$
-t_{\mathrm{w}}^{*}=\log \left(w^{*} / w_{\mathrm{a}}\right), \quad t_{\mathrm{h}}^{*}=\log \left(h^{*} / h_{\mathrm{a}}\right)
+t_{\mathrm{w}}^{\ast}=\log \left(w^{\ast} / w_{\mathrm{a}}\right), \quad t_{\mathrm{h}}^{\ast}=\log \left(h^{\ast} / h_{\mathrm{a}}\right)
 $$
 
 分别除以$w_a, h_a$进行归一化利于网络学习，但是为什么宽高比值都加了一个log函数呢？**因为宽高比必须大于等于0，所以变成了一个带约束的优化问题，而$w/w_a=e^{t_w}$恒大于0，这样网络输出的$t_w, t_h$就没有限制了！！！**
@@ -247,10 +247,10 @@ anchors根据有无物体分为正样本和负样本：如果一个anchor和某�
 
 尽管可以所有的正负样本都可以参与训练，但是因为图片中目标个数有限，所以会导致大多数anchors都是负样本（背景）。例如$k=9$，feature maps的 $w=h=50$时，anchors总数为$9\times 50 \times50=22500$个，这样正负样本很不平衡，于是作者在一张图中随机各选取128个正负样本组成256个anchors的mini batch。
 
-RPN网络的Loss函数如下，$N_{reg}$只包括$p^*=1$的正样本：
+RPN网络的Loss函数如下，$N_{reg}$只包括$p^\ast=1$的正样本：
 
 $$
-L(\{p_i\},\{t_{i}\})=\frac{1}{N_{cls}} \sum_{i} L_{cls}\left(p_i, p_{i}^{*}\right)+\lambda \frac{1}{N_{reg}} \sum_{i} p_{i}^{*} L_{reg}\left(t_{i}, t_{i}^{*}\right)
+L(\{p_i\},\{t_{i}\})=\frac{1}{N_{cls}} \sum_{i} L_{cls}\left(p_i, p_{i}^{\ast}\right)+\lambda \frac{1}{N_{reg}} \sum_{i} p_{i}^{\ast} L_{reg}\left(t_{i}, t_{i}^{\ast}\right)
 $$
 
 ### 3.5 NMS
@@ -393,10 +393,10 @@ RPN的测试过程稍有不同：
 反向传播公式为：
 
 $$
-\frac{\partial L}{\partial x_{i}}=\sum_{r} \sum_{j}\left[i=i^{*}(r, j)\right] \frac{\partial L}{\partial y_{r j}}
+\frac{\partial L}{\partial x_{i}}=\sum_{r} \sum_{j}\left[i=i^{\ast}(r, j)\right] \frac{\partial L}{\partial y_{r j}}
 $$
 
-这里，$x_i$代表池化前特征图上的像素点；$y_{rj}$代表池化后的第r个候选区域的第j个点；$i^* (r,j)$代表点$y_{rj}$的来源，即最大池化时选出的最大像素值所在点的坐标。由上式可以看出，只有当池化后某一个点的像素值在池化过程中采用了当前点$x_i$的像素值（即满足$i=i^* (r,j)$)，才在$x_i$代表处回传梯度。
+这里，$x_i$代表池化前特征图上的像素点；$y_{rj}$代表池化后的第r个候选区域的第j个点；$i^\ast (r,j)$代表点$y_{rj}$的来源，即最大池化时选出的最大像素值所在点的坐标。由上式可以看出，只有当池化后某一个点的像素值在池化过程中采用了当前点$x_i$的像素值（即满足$i=i^\ast (r,j)$)，才在$x_i$代表处回传梯度。
 
 ### 4.2 Prediction
 
