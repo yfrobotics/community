@@ -130,22 +130,3 @@ ros2 run rviz2 rviz2
 ## 4. 小结
 
 这篇文章介绍了HOKUYO的UST-10LX单线激光雷达，并且初步介绍了其在ROS 2中的使用方法。之前我也使用过RPLIDAR A1激光雷达结合ROS和Hector Mapping试验过SLAM，视频在B站上可以找到：https://www.bilibili.com/video/BV1i741137gG 。我计划的下一步工作是介绍如何在移动机器人上通过低成本激光雷达，进行简单的避障与路径规划，实现相比超声波传感器更加准确的运动控制。
-
-
-----------------------------
-
-**Personal Notes:**
-
-```
-cd ~/ros2_dashing/
-colcon build --symlink-install
-. ~/ros2_dashing/install/setup.bash
-```
-
-```
-sudo rosdep install --from-paths src --ignore-src -r -y
-```
-
-```
-ros2 run urg_node urg_node_driver --ros-args --params-file ~/workstation/ros2_ws/src/urg_node/launch/urg_node_ethernet.yaml 
-```
