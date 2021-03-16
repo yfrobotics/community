@@ -7,6 +7,7 @@
 
 社区文章列表如下:
 
+- 2021/03/15: [在ROS 2中使用单线激光雷达 (HOKUYO UST-10LX)](posts/hokuyo-lidar-ros2.md) - [automaticdai](https://github.com/automaticdai)
 - 2020/12/23: [赛博朋克中的科技到底离我们有多远？](posts/how-far-is-cyberpunk.md) - [automaticdai](https://github.com/automaticdai)
 - 2020/11/29: [Nvidia Jetson Nano介绍与使用指南](posts/nvidia-jetson-nano-intro-and-guidance.md) - [automaticdai](https://github.com/automaticdai)
 - 2020/10/19: [Faster R-CNN原理与使用](posts/faster-rcnn-intro.md) - [LinkHS](https://github.com/linkhs)
