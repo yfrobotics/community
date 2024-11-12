@@ -7,11 +7,11 @@
 
 社区文章列表如下:
 
-- 2021/04/03: [在机器人系统中使用舵机](posts/2021-04-03_using-servo-in-robots.md) - [automaticdai](https://github.com/automaticdai)
-- 2021/03/15: [在ROS 2中使用单线激光雷达 (HOKUYO UST-10LX)](posts/2021-03-15_hokuyo-lidar-ros2.md) - [automaticdai](https://github.com/automaticdai)
-- 2020/12/23: [赛博朋克中的科技到底离我们有多远？](posts/2020-12-23_how-far-is-cyberpunk.md) - [automaticdai](https://github.com/automaticdai)
-- 2020/11/29: [Nvidia Jetson Nano介绍与使用指南](posts/2020-11-29_nvidia-jetson-nano-intro-and-guidance.md) - [automaticdai](https://github.com/automaticdai)
-- 2020/10/18: [写在云飞机器人实验室改版之际](posts/2020-10-18_community-campaign.md) - [automaticdai](https://github.com/automaticdai)
+- 2021/04/03: [在机器人系统中使用舵机](posts/2021-04-03-using-servo-in-robots.md) - [automaticdai](https://github.com/automaticdai)
+- 2021/03/15: [在ROS 2中使用单线激光雷达 (HOKUYO UST-10LX)](posts/2021-03-15-hokuyo-lidar-ros2.md) - [automaticdai](https://github.com/automaticdai)
+- 2020/12/23: [赛博朋克中的科技到底离我们有多远？](posts/2020-12-23-how-far-is-cyberpunk.md) - [automaticdai](https://github.com/automaticdai)
+- 2020/11/29: [Nvidia Jetson Nano介绍与使用指南](posts/2020-11-29-nvidia-jetson-nano-intro-and-guidance.md) - [automaticdai](https://github.com/automaticdai)
+- 2020/10/18: [写在云飞机器人实验室改版之际](posts/2020-10-18-community-campaign.md) - [automaticdai](https://github.com/automaticdai)
 
 ## Commit an issue
 
